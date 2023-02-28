@@ -1,0 +1,53 @@
+version: '3.2'
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: nodejs_test
+      MYSQL_USER: nodejs_test
+      MYSQL_PASSWORD: password
+      MYSQLX: 'OFF'
+    command: --pid-file=/run/mysqld/mysqld.pid
+    ports:
+      - '3306:3306'
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-proot']
+      timeout: 10s
+      retries: 10
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql-conf.d:/etc/mysql/conf.d
+      - /app/node_modules
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: secret
+    ports:
+      - '8080:80'
+  app:
+    build: .
+    restart: always
+    ports:
+      - '3000:3000'
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: secret
+      DB_NAME: nodejs_test
+      DB_FLAVOUR: mysql
+      JWT_SECRET: 'QWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY3NzIz'
+      ENCRYPTION_IV: 'dd99fc75aed67d15'
+      ENCRYPTION_KEY: '7533845edaf8e3318472dd1b331a7ec2'
+    volumes:
+      - .:/app:delegated
+      - node_modules:/app/node_modules
+volumes:
+  db_data:
+  node_modules:
