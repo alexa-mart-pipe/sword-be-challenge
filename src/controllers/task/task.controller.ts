@@ -3,6 +3,7 @@ import { CREATED, FORBIDDEN, NOT_FOUND, OK } from 'http-status';
 import { FindOptions } from 'sequelize';
 import { Task } from '../../models/Task';
 import { UserRole } from '../../models/User';
+import { sendNewTaskEmailToManagers } from '../../services/email.sender';
 import { decrypt, encrypt } from '../../utils/encryption';
 import { RequestWithToken, Token } from '../../utils/token';
 
@@ -26,6 +27,12 @@ export async function CreateTask(
 
     if (!newTask)
       throw new Error('A problem has occurred during task creation in the db.');
+
+    sendNewTaskEmailToManagers(
+      newTask.dataValues.userId,
+      newTask.dataValues.id,
+      newTask.dataValues.performedAt,
+    );
 
     return res.status(CREATED).json(newTask);
   } catch (error) {

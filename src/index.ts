@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import errorHandler from './middleware/errorHandling';
 import userRoutes from './routes/user.routes';
 import taskRoutes from './routes/task.routes';
+import { startEmailConsumer } from './messaging/email.consumer';
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ if (!process.env.JEST_WORKER_ID) {
       console.error('Error connecting to database:', error);
     }
   })();
+
+  startEmailConsumer();
 }
 
 // Configuring body parser middleware
