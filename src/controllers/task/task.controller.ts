@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { validationResult } from 'express-validator';
-import { CREATED, FORBIDDEN, NOT_FOUND, NO_CONTENT, OK } from 'http-status';
+import { CREATED, FORBIDDEN, NOT_FOUND, OK } from 'http-status';
 import { FindOptions } from 'sequelize';
-import { RequestWithToken, Token } from '../middleware/authorizationHandling';
-import { Task } from '../models/Task';
-import { UserRole } from '../models/User';
-import { decrypt, encrypt } from '../utils/encryption';
+import { Task } from '../../models/Task';
+import { UserRole } from '../../models/User';
+import { decrypt, encrypt } from '../../utils/encryption';
+import { RequestWithToken, Token } from '../../utils/token';
 
 export async function CreateTask(
   req: Request,
@@ -25,9 +24,10 @@ export async function CreateTask(
       summary: encryptedSummary,
     });
 
-    return res.status(CREATED).json({
-      newTask,
-    });
+    if (!newTask)
+      throw new Error('A problem has occurred during task creation in the db.');
+
+    return res.status(CREATED).json(newTask);
   } catch (error) {
     next(error);
   }

@@ -16,7 +16,8 @@ type TaskCreationAttributes = Optional<
   'id' | 'createdAt' | 'updatedAt'
 >;
 
-interface TaskModel extends Model<TaskAttributes, TaskCreationAttributes> {}
+export interface TaskModel
+  extends Model<TaskAttributes, TaskCreationAttributes> {}
 
 export const Task = sequelize.define<TaskModel>('Tasks', {
   id: {

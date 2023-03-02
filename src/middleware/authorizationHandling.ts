@@ -1,18 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { UNAUTHORIZED } from 'http-status';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import User, { UserRole } from '../models/User';
-
-export interface RequestWithToken extends Request {
-  token: string | Token;
-}
-
-export interface Token extends JwtPayload {
-  email: string;
-  fullName: string;
-  role: string;
-  id: number;
-}
+import { UserRole } from '../models/User';
+import { getAndVerifyToken, RequestWithToken } from '../utils/token';
 
 /**
  * Checks if the "user" property is
@@ -89,10 +78,11 @@ export async function taskUserAuthorization(
   try {
     const token = getAndVerifyToken(req);
 
-    if (token.role !== UserRole.Technician && token.role !== UserRole.Manager)
+    if (token.role !== UserRole.Technician && token.role !== UserRole.Manager) {
       return res.status(UNAUTHORIZED).json({
         message: 'This content is only accessible for task users.',
       });
+    }
 
     (req as RequestWithToken).token = token;
 
@@ -103,13 +93,3 @@ export async function taskUserAuthorization(
     });
   }
 }
-
-const getAndVerifyToken = (req: Request) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) throw new Error('No token was found.');
-
-  const verifiedToken = jwt.verify(token, process.env.JWT_SECRET ?? '');
-
-  return verifiedToken as Token;
-};

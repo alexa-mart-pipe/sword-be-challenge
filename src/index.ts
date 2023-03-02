@@ -15,15 +15,17 @@ const port = process.env.PORT;
 
 app.use(cors());
 
-// Test the database connection
-(async () => {
-  try {
-    await database.authenticate();
-    console.log('Connected to database!');
-  } catch (error) {
-    console.error('Error connecting to database:', error);
-  }
-})();
+// Test the database connection if not on JEST mode.
+if (!process.env.JEST_WORKER_ID) {
+  (async () => {
+    try {
+      await database.authenticate();
+      console.log('Connected to database!');
+    } catch (error) {
+      console.error('Error connecting to database:', error);
+    }
+  })();
+}
 
 // Configuring body parser middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -35,4 +37,8 @@ app.use('/task', taskRoutes);
 
 app.use(errorHandler);
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+export const server = app.listen(port, () =>
+  console.log(`Listening on port ${port}`),
+);
+
+export default app;

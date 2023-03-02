@@ -5,7 +5,7 @@ import {
   DeleteTask,
   GetAllTasks,
   UpdateTask,
-} from '../controllers/task.controller';
+} from '../controllers/task/task.controller';
 import {
   managerAuthorization,
   taskUserAuthorization,

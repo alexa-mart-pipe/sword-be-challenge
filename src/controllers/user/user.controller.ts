@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import User from '../models/User';
+import User from '../../models/User';
 import { CREATED } from 'http-status';
 
 /**

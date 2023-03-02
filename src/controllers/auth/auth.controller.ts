@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UNAUTHORIZED, NOT_FOUND, OK, BAD_REQUEST } from 'http-status';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import User, { UserAttributes } from '../models/User';
+import User, { UserAttributes } from '../../models/User';
 
 export async function Login(req: Request, res: Response, next: NextFunction) {
   try {
@@ -14,7 +14,7 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
         message: 'Invalid request. Missing parameters: email or password.',
       });
 
-      next();
+      return;
     }
 
     const user: UserAttributes | undefined = await User.findOne({
@@ -26,7 +26,7 @@ export async function Login(req: Request, res: Response, next: NextFunction) {
         message: 'User not found.',
       });
 
-      next();
+      return;
     }
 
     if (!bcrypt.compareSync(password, user?.password ?? '')) {
