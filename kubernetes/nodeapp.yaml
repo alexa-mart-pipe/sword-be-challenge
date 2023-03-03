@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodeapp-service
+spec:
+  selector:
+    app: nodeapp
+  ports:
+    - name: 'nodeapp'
+      targetPort: 3000
+      port: 3000
+      nodePort: 30253
+      protocol: TCP
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeapp-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nodeapp
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nodeapp
+    spec:
+      containers:
+        - name: nodeapp
+          image: nodeapp-image
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: mysql-service
+            - name: DB_PORT
+              value: '3306'
+            - name: DB_USER
+              value: root
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: root-password
+            - name: DB_NAME
+              value: nodejs_test
+            - name: DB_FLAVOUR
+              value: mysql
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nodeapp-secret
+                  key: jwt-secret
+            - name: ENCRYPTION_IV
+              valueFrom:
+                secretKeyRef:
+                  name: nodeapp-secret
+                  key: encryption-iv
+            - name: ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nodeapp-secret
+                  key: encryption-key
+            - name: RABBITMQ_HOST
+              value: rabbitmq-service
+            - name: RABBITMQ_EMAIL_QUEUE
+              value: emailQueue
+            - name: NODEMAILER_HOST
+              value: smtp.gmail.com
+            - name: NODEMAILER_PORT
+              value: '465'
+            - name: NODEMAILER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nodeapp-secret
+                  key: nodemailer-user
+            - name: NODEMAILER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nodeapp-secret
+                  key: nodemailer-pass
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nodeapp-secret
+type: Opaque
+data:
+  jwt-secret: UVdSdGFXNGlMQ0pKYzNOMVpYSWlPaUpKYzNOMVpYSWlMQ0pWYzJWeWJtRnRaU0k2SWtwaGRtRkpibFZ6WlNJc0ltVjRjQ0k2TVRZM056SXo=
+  encryption-iv: ZGQ5OWZjNzVhZWQ2N2QxNQ==
+  encryption-key: NzUzMzg0NWVkYWY4ZTMzMTg0NzJkZDFiMzMxYTdlYzI=
+  nodemailer-user: YWxleGFuZHJhc20zMjFAZ21haWwuY29t
+  nodemailer-pass: bnFvaHRnemJoanB5b3VkbA==

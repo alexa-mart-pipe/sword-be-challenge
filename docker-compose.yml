@@ -51,6 +51,12 @@ services:
       JWT_SECRET: 'QWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTY3NzIz'
       ENCRYPTION_IV: 'dd99fc75aed67d15'
       ENCRYPTION_KEY: '7533845edaf8e3318472dd1b331a7ec2'
+      RABBITMQ_HOST: 'amqp://localhost'
+      RABBITMQ_EMAIL_QUEUE: 'emailQueue'
+      NODEMAILER_HOST: 'smtp.gmail.com'
+      NODEMAILER_PORT: 465
+      NODEMAILER_USER: 'alexandrasm321@gmail.com'
+      NODEMAILER_PASSWORD: 'nqohtgzbhjpyoudl'
     volumes:
       - .:/app:delegated
       - node_modules:/app/node_modules

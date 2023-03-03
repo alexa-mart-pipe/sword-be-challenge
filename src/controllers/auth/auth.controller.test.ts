@@ -2,7 +2,7 @@ import { describe, it, jest, expect, afterEach, afterAll } from '@jest/globals';
 import User, { UserAttributes, UserRole } from '../../models/User';
 import request from 'supertest';
 import bcrypt from 'bcryptjs';
-import app, { server } from '../../';
+import app from '../../';
 import { BAD_REQUEST, NOT_FOUND, OK, UNAUTHORIZED } from 'http-status';
 
 jest.mock('../../models/User');
@@ -23,7 +23,6 @@ const mockedUser: UserAttributes = {
 };
 
 afterAll((done) => {
-  server.close();
   done();
 });
 

@@ -28,6 +28,9 @@ if (!process.env.JEST_WORKER_ID) {
   })();
 
   startEmailConsumer();
+  //NOTE: Could be in a different node js app.
+  //For the sake of demonstration and simplicity,
+  //the consumer was done in the same app.
 }
 
 // Configuring body parser middleware
@@ -40,8 +43,7 @@ app.use('/task', taskRoutes);
 
 app.use(errorHandler);
 
-export const server = app.listen(port, () =>
-  console.log(`Listening on port ${port}`),
-);
+if (!process.env.JEST_WORKER_ID)
+  app.listen(port, () => console.log(`Listening on port ${port}`));
 
 export default app;

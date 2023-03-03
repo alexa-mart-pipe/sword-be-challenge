@@ -8,19 +8,20 @@ import {
 } from 'http-status';
 import { FindOptions } from 'sequelize';
 import request from 'supertest';
-import app, { server } from '../../';
+import app from '../../';
 import Task, { TaskAttributes } from '../../models/Task';
 import { UserRole } from '../../models/User';
 import * as encryption from '../../utils/encryption';
 import { getAndVerifyToken, Token } from '../../utils/token';
+import * as emailSender from '../../services/email.sender';
 
 jest.mock('../../models/Task');
 jest.mock('../../utils/token');
 jest.mock('../../utils/encryption');
+jest.mock('../../services/email.sender');
 const mockedGetToken = getAndVerifyToken as jest.Mock;
 
 afterAll((done) => {
-  server.close(); //Close app listener between each test suite
   done();
 });
 
@@ -56,12 +57,9 @@ describe('Create Task', () => {
   mockedDecryption.mockImplementation(() => {
     return mockedTask.summary;
   });
-  const mockedTaskCreate = Task.create as jest.Mock;
-  mockedTaskCreate.mockImplementation((): TaskAttributes => {
-    return mockedTask;
-  });
 
   const encryptionSpy = jest.spyOn(encryption, 'encrypt');
+  const emailSpy = jest.spyOn(emailSender, 'sendNewTaskEmailToManagers');
 
   const validBody = {
     performedAt: mockedTask.performedAt.toISOString(),
@@ -132,11 +130,24 @@ describe('Create Task', () => {
     mockedGetToken.mockImplementation((): Token => {
       return validTechToken;
     });
+    const mockedTaskCreate = Task.create as jest.Mock;
+    mockedTaskCreate.mockImplementation(() => {
+      return { dataValues: mockedTask };
+    });
+    const mockedSendEmail = emailSender.sendNewTaskEmailToManagers as jest.Mock;
+    mockedSendEmail.mockImplementation(() => {
+      return true;
+    });
 
     const res = await request(app).post('/task').send(validBody);
 
     expect(res.statusCode).toEqual(CREATED);
-    expect(encryptionSpy).toHaveBeenCalledWith(validBody.summary);
+    expect(encryptionSpy).toBeCalledTimes(1);
+    expect(emailSpy).toHaveBeenCalledWith(
+      mockedTask.userId,
+      mockedTask.id,
+      mockedTask.performedAt,
+    );
     expect(res.body.userId).toEqual(validTechToken.id);
     expect(res.body.performedAt).toEqual(validBody.performedAt);
     expect(res.body.summary).toEqual(validBody.summary);

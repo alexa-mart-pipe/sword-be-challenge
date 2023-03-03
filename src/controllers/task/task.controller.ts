@@ -20,12 +20,12 @@ export async function CreateTask(
     const encryptedSummary = encrypt(summary);
 
     const newTask = await Task.create({
-      userId: token.id,
+      userId: token?.id,
       performedAt,
       summary: encryptedSummary,
     });
 
-    if (!newTask)
+    if (!newTask || !newTask.dataValues)
       throw new Error('A problem has occurred during task creation in the db.');
 
     sendNewTaskEmailToManagers(
@@ -34,7 +34,7 @@ export async function CreateTask(
       newTask.dataValues.performedAt,
     );
 
-    return res.status(CREATED).json(newTask);
+    res.status(CREATED).json(newTask.dataValues);
   } catch (error) {
     next(error);
   }
@@ -57,7 +57,7 @@ export async function UpdateTask(
         message: 'Task not found.',
       });
 
-      next();
+      return;
     }
 
     if (token.id !== task?.dataValues.userId) {
@@ -65,7 +65,7 @@ export async function UpdateTask(
         message: 'Cannot update another technicians task.',
       });
 
-      next();
+      return;
     }
 
     let updateRequest: { performedAt?: Date; summary?: string } = {};
@@ -82,8 +82,6 @@ export async function UpdateTask(
 
       res.status(OK).json({ taskId: updatedTask[0] });
     }
-
-    next();
   } catch (error) {
     next(error);
   }
@@ -104,7 +102,7 @@ export async function DeleteTask(
         message: 'Task not found.',
       });
 
-      next();
+      return;
     }
 
     await Task.destroy({
@@ -114,8 +112,6 @@ export async function DeleteTask(
     res.status(OK).json({
       message: 'Task deleted.',
     });
-
-    next();
   } catch (error) {
     next(error);
   }
